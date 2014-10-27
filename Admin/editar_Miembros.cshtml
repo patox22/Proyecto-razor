@@ -1,0 +1,77 @@
+﻿@{
+    Page.Title = "Pagina de Edición.";
+    Layout = "~/_SiteLayout.cshtml";
+    String titulo = "Editar Miembros de la Comunidad";
+
+
+
+    //  no ingresa sin logear ni ser admin
+    if (!WebSecurity.IsAuthenticated)
+    {
+
+        Response.Redirect("~/Account/Login.cshtml");
+
+    }
+    else if (!Roles.IsUserInRole(WebSecurity.CurrentUserName, "admin"))
+    {
+
+        Response.Redirect("~/Account/Login.cshtml");
+    }
+    
+        
+    // sentencias SQL
+    var id=Request["ID"];
+    var Query = "SELECT * FROM Usuario where ID=@0";
+    var db = Database.Open("Members");
+    var Miembros = db.QuerySingle(Query,id);
+    
+    // Guarda en la variables para despues mostrarlos
+    var MiembroNombres = Miembros.nombres;
+    var MiembroApellidos = Miembros.apellidos;
+    var MiembroDireccion = Miembros.direccion;
+    var MiembroTelefono = Miembros.telefono;
+
+
+
+
+    // validacion de los datos de entradas
+    Validation.RequireField("MiembroNombres", "Debe especificar sus nombres.");
+    Validation.RequireField("MiembroApellidos", "Debe especificar sus apellidos.");
+    Validation.RequireField("MiembroDireccion", "Debe especificar la dirección para la verificación.");
+    Validation.RequireField("MiembroTelefono", "Debe especificar su teléfono para contactarnos.");
+    Validation.Add("MiembroTelefono",
+    Validator.StringLength(
+    maxLength: 8,
+    minLength: 0,
+    errorMessage: "El número telefónico es de 8 carácteres."
+    ));
+    
+    
+    // validación de los POST
+    if(IsPost){
+    MiembroNombres=Request["formNombre"];
+    MiembroApellidos = Request["formApellido"];
+    MiembroDireccion= Request["formDireccion"];
+    MiembroTelefono=Request["formTelefono"];
+
+    var SQLUPDATE = "UPDATE Usuario SET nombres=@0,apellidos=@1 ,direccion=@2,telefono=@3 WHERE ID=@4 ";
+    db.Execute(SQLUPDATE,MiembroNombres, MiembroApellidos, MiembroDireccion, MiembroTelefono, id);
+    Response.Redirect("~/Admin/Mantenedor.cshtml");
+    }
+    
+}
+
+
+
+
+
+
+<h1>@titulo</h1>
+
+<form action="" method="post">
+    <p>Nombres:</br><input type="text" name="formNombre" value="@MiembroNombres" required="" /></p>
+    <p>Apellidos:</br><input type="text" name="formApellido" value="@MiembroApellidos"  required=""/></p>
+    <p>Dirección:</br><input type="text" name="formDireccion" value="@MiembroDireccion" required="" /></p>
+    <p>Teléfono:</br><input type="text" name="formTelefono" value="@MiembroTelefono" required=""/></p>
+   <p><input type="submit" value="Editar Datos" /></p> 
+</form>

@@ -1,0 +1,48 @@
+﻿@{
+    Page.Title = "WEB PAGE ADMIN";
+    Layout = "~/_SiteLayout.cshtml";
+
+    var db = Database.Open("Members");
+    var Sql = "SELECT * FROM Usuario ORDER BY ID";
+    var data = db.Query(Sql);
+
+
+    
+    //  no ingresa sin logear ni ser admin
+    if(!WebSecurity.IsAuthenticated){
+
+        Response.Redirect("~/Account/Login.cshtml");
+        
+    }else if(!Roles.IsUserInRole(WebSecurity.CurrentUserName ,"admin")){
+
+        Response.Redirect("~/Account/Login.cshtml");
+    }
+    
+    
+}
+
+
+
+
+
+
+<table>
+    <thead><tr><th>Nombres</th><th>Apellidos</th><th>Direccion</th><th>Teléfono</th></tr></thead>
+    <tbody>
+        @foreach (var row in data)
+        {
+            <tr>
+                <td>@row.nombres</td>
+                <td>@row.apellidos</td>
+                <td>@row.direccion</td>
+                <td>@row.telefono</td>
+                <td><a href="~/Admin/editar_Miembros.cshtml?ID=@row.ID"><img src="~/Images/editar.ico" alt="Editar" /></a></td>
+                <td><a href="~/Admin/eliminar_Miembros.cshtml?ID=@row.ID"><img src="~/Images/eliminar.ico" alt="Eliminar" /></a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<input type="button" value="Agregar miembros" onclick="window.location='agregar_Miembros.cshtml'" />
+
+

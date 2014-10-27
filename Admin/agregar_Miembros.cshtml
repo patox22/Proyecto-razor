@@ -1,0 +1,77 @@
+﻿@{
+    Page.Title = "Agregar nuevos miembros";
+    Layout = "~/_SiteLayout.cshtml";
+    
+    
+   
+
+    //  no ingresa sin logear ni ser admin
+    if (!WebSecurity.IsAuthenticated)
+    {
+
+        Response.Redirect("~/Account/Login.cshtml");
+
+    }
+    else if (!Roles.IsUserInRole(WebSecurity.CurrentUserName, "admin"))
+    {
+
+        Response.Redirect("~/Account/Login.cshtml");
+    }
+
+
+    // inicio de las variables..
+    
+    var nombres = "";
+    var apellidos = "";
+    var direccion = "";
+    var telefono = "";
+    
+    // validacion de los datos de entradas
+    Validation.RequireField("nombres", "Debe especificar sus nombres.");
+    Validation.RequireField("apellidos", "Debe especificar sus apellidos.");
+    Validation.RequireField("direccion", "Debe especificar la dirección para la verificación.");
+    Validation.RequireField("telefono", "Debe especificar su teléfono para contactarnos.");
+    Validation.Add("telefono",
+    Validator.StringLength(
+    maxLength: 8,
+    minLength: 0,
+    errorMessage: "El número telefónico es de 8 carácteres."
+    ));
+    
+    
+    // abro conexion a bases de datos
+
+    var db = Database.Open("Members");
+    var SQL = "INSERT INTO Usuario (nombres ,apellidos ,direccion ,telefono) VALUES(@0,@1,@2,@3) ";
+    
+    
+    
+    // envia un request al formulario a las variables
+    if(IsPost)
+    {
+
+        nombres = Request.Form["nombres"];
+        apellidos = Request.Form["apellidos"];
+        direccion = Request.Form["direccion"];
+        telefono = Request.Form["telefono"];
+        db.Execute(SQL, nombres, apellidos, direccion, telefono);
+        Response.Redirect("~/Admin/Mantenedor.cshtml");
+    }
+    
+    
+    
+    
+       
+}
+
+    <h1>Agregar nuevos miembros</h1>
+
+<form method="post" action="">
+    <p>Nombres:</br><input type="text" name="nombres" required=""/></p>
+    <p>Apellidos:</br><input type="text" name="apellidos" required="" /></p>
+    <p>Dirección:</br><input  type="text" name="direccion" required=""/></p>
+    <p>Teléfono:</br><input type="text" name="telefono"  required=""/></p>
+    <p><input  type="submit" value="Añadir miembros"/></p>
+
+
+</form>

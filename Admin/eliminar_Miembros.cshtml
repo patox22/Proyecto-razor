@@ -1,0 +1,42 @@
+﻿@{
+    Page.Title = "Pagina de Eliminación";
+    Layout = "~/_SiteLayout.cshtml";
+    
+    //datos de la bases de datos...
+    
+    var id =Request["ID"];
+    var SQLSELECT = "SELECT * FROM Usuario where ID=@0";
+    var db = Database.Open("Members");
+    var Miembro = db.QuerySingle(SQLSELECT,id);
+    var MiembroNombre = Miembro.nombres;
+    
+    if(IsPost){
+        var SQLDELETE = "DELETE FROM Usuario WHERE ID=@0";
+        db.Execute(SQLDELETE,id);
+        Response.Redirect("~/Admin/Mantenedor.cshtml");
+    }
+
+
+
+    //  no ingresa sin logear ni ser admin
+    if (!WebSecurity.IsAuthenticated)
+    {
+
+        Response.Redirect("~/Account/Login.cshtml");
+
+    }
+    else if (!Roles.IsUserInRole(WebSecurity.CurrentUserName, "admin"))
+    {
+
+        Response.Redirect("~/Account/Login.cshtml");
+    }
+    
+       
+}
+
+<h1>Eliminar Miembros de la Comunidad.</h1>
+<p>¿Estas seguro de eliminar a <strong>@MiembroNombre</strong>?</p>
+<form action="" method="post">
+    <input type="submit"  value="Si"/>
+    <input type="button" value="No" onclick="window.location = 'Mantenedor.cshtml'" />
+</form>
